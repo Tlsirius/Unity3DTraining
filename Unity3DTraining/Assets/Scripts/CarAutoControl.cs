@@ -20,8 +20,9 @@ public class CarAutoControl : MonoBehaviour
     private const int numNodes = 6;                         //number of nodes/crossroads
     private Vector3[] Nodes = new Vector3[numNodes];        //node coordinates
     private bool[,] NodeMap = new bool[numNodes, numNodes]; //graph of nodes. NodeMap[a,b] = true means a and b is connected.
-    private int startingNode = 0;                           //starting Node of current straight line
-    private int targetNode = 1;                             //target Node of current straight line
+
+    public int startingNode = 0;                           //starting Node of current straight line
+    public int targetNode = 1;                             //target Node of current straight line
 
     //Variables relating to car state
     private bool crossing = false;                          //indicates whether the car is crossing a crossroad
@@ -41,14 +42,9 @@ public class CarAutoControl : MonoBehaviour
     void Start()
     {
         InitNode();
-        currentSpeed = turningSpeed;
-        sprintStartPos = GetsprintStartPos();
-        sprintEndPos = GetsprintEndPos();
-        Debug.Log("sprintEndPos" + sprintStartPos);
-        Debug.Log("sprintEndPos" + sprintEndPos);
-        transform.position = sprintStartPos;
-        CalculateDistance();
+        InitState();
     }
+
 
     // Initialize the nodes' coordinate and connection
     private void InitNode()
@@ -76,6 +72,19 @@ public class CarAutoControl : MonoBehaviour
         ConnectNode(0, 3);
         ConnectNode(1, 4);
         ConnectNode(2, 5);
+    }
+
+    //Initialize speed and position
+    public void InitState()
+    {
+        currentSpeed = turningSpeed;
+        sprintStartPos = GetsprintStartPos();
+        sprintEndPos = GetsprintEndPos();
+        //Debug.Log("sprintEndPos" + sprintStartPos);
+        //Debug.Log("sprintEndPos" + sprintEndPos);
+        transform.position = sprintStartPos;
+        transform.rotation = Quaternion.Euler(0, -90, 0);
+        CalculateDistance();
     }
 
     // Calculate the starting position of straight line sprint
@@ -193,7 +202,7 @@ public class CarAutoControl : MonoBehaviour
     // Randomly choose the a node as destination 
     private void GetNextNode()
     {
-        Debug.Log("GetNextNode");
+        //Debug.Log("GetNextNode");
         Debug.Log(transform.position.ToString());
         List<int> validNodes = new List<int>();
         for (int i = 0; i < numNodes; i++)
@@ -209,7 +218,7 @@ public class CarAutoControl : MonoBehaviour
         }
         int randomNode = validNodes[Random.Range(0, validNodes.Count)];
         //int randomNode = validNodes[1];
-        Debug.Log("NextNode:" + randomNode);
+        //Debug.Log("NextNode:" + randomNode);
         float turningAngle = CalculateAngle(Nodes[randomNode] - Nodes[targetNode], Nodes[targetNode] - Nodes[startingNode]);
         if (turningAngle > 45f)
         {
@@ -217,9 +226,9 @@ public class CarAutoControl : MonoBehaviour
             turningRadius = 0.75f * roadWidth;
 
             float angleAcc = 2 * Mathf.Asin(0.5f * turningSpeed * Time.deltaTime / turningRadius);
-            Debug.Log("angleAcc:" + angleAcc.ToString());
+            //Debug.Log("angleAcc:" + angleAcc.ToString());
             turningFrameNum = Mathf.CeilToInt(Mathf.PI / (2 * angleAcc));
-            Debug.Log("turningFrameNum:" + turningFrameNum.ToString());
+            //Debug.Log("turningFrameNum:" + turningFrameNum.ToString());
             turningStartPos = sprintEndPos;
             turningStartDirection = transform.rotation;
         }
@@ -286,23 +295,23 @@ public class CarAutoControl : MonoBehaviour
         Vector3 shiftFoward = new Vector3(0, 0, 0);
         Vector3 shiftLeft = new Vector3(0, 0, 0);
         Vector3 tmp;
-        Debug.Log("CrossRoad");
+        //Debug.Log("CrossRoad");
         switch (turningDirection)
         {
             case TurningDirection.Left:
-                Debug.Log("currentFrame:" + currentTurningFrame.ToString());
+                //Debug.Log("currentFrame:" + currentTurningFrame.ToString());
                 curAngle = Mathf.PI * (float)currentTurningFrame / ((float)turningFrameNum * 2f);
-                Debug.Log("curAngle:" + curAngle);
+                //Debug.Log("curAngle:" + curAngle);
                 shiftFoward = turningRadius * (turningStartDirection * Vector3.forward) * Mathf.Sin(curAngle);
                 shiftLeft = turningRadius * (turningStartDirection * Vector3.left) * (1 - Mathf.Cos(curAngle));
-                Debug.Log("shiftFowrad:" + shiftFoward.ToString());
-                Debug.Log("shiftLeft:" + shiftLeft.ToString());
+                //Debug.Log("shiftFowrad:" + shiftFoward.ToString());
+                //Debug.Log("shiftLeft:" + shiftLeft.ToString());
                 transform.position = turningStartPos + shiftFoward + shiftLeft;
                 tmp = new Vector3(0, -curAngle * 180f / Mathf.PI, 0);
                 transform.eulerAngles = tmp + turningStartDirection.eulerAngles;
 
-                Debug.Log("turningStartDirection:" + turningStartDirection.ToString());
-                Debug.Log("transform.eulerAngles:" + transform.eulerAngles.ToString());
+                //Debug.Log("turningStartDirection:" + turningStartDirection.ToString());
+                //Debug.Log("transform.eulerAngles:" + transform.eulerAngles.ToString());
                 if (currentTurningFrame >= turningFrameNum)
                 {
                     crossing = false;
@@ -350,4 +359,5 @@ public class CarAutoControl : MonoBehaviour
         }
 
     }
+    
 }

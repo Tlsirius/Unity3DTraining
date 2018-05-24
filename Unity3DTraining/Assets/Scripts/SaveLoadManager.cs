@@ -1,49 +1,102 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System;
 using System.IO;
 using System.Security;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class SaveLoadManager : MonoBehaviour
 {
 
-    private string key = "test";
+    private string key = "testKey";
     private string path = Directory.GetCurrentDirectory() + "\\Save\\";
     private string fileName = "test.sav";
 
+    public void Start()
+    {
 
-    public void Save(List<string> data)
+    }
+    
+
+    public void Save()
     {
         if (!Directory.Exists(path))
         {
             Directory.CreateDirectory(path);
         }
 
-        StreamWriter writer = new StreamWriter(path + fileName, true);
-        string encrypt;
-        for (int i = 0; i < data.Count; i++)
+        StreamWriter writer = new StreamWriter(path + fileName, false);
+        
+
+        CarAutoControl carAI = GameObject.Find("Car").GetComponent<CarAutoControl>();
+        if(carAI == null)
         {
-            encrypt = Encrypt(data[i], key);
-            writer.WriteLine(encrypt);
+            Debug.LogError("Error! CarAutoControl object not found!");
         }
+        writer.WriteLine(Encrypt("startingNode:" + carAI.startingNode.ToString()));
+        writer.WriteLine(Encrypt("targetNode:" + carAI.targetNode.ToString()));
+        Vector3 rotation = carAI.transform.rotation.eulerAngles;
+        Debug.Log("rotation y:" + rotation.y.ToString());
+        writer.WriteLine(Encrypt("rotation:" + rotation.y.ToString()));
+
         writer.Close();
     }
 
-    public List<string> Load()
+    public void Load()
     {
+        //Load scene first.
+        Debug.Log("Load");
         StreamReader reader = new StreamReader(path + fileName);
-        string read;
-        List<string> data = null;
+        string read, decrypt;
+        GameObject car = GameObject.Find("Car");
+
+        if (car == null)
+        {
+            Debug.LogError("Error! Car object not found!");
+        }
+        CarAutoControl carAI = GameObject.Find("Car").GetComponent<CarAutoControl>();
+        if (carAI == null)
+        {
+            Debug.LogError("Error! CarAutoControl object not found!");
+        }
+        float rotation=0;
         while (!reader.EndOfStream)
         {
             read = reader.ReadLine();
-            data.Add(Decrypt(read, key));
+            decrypt = Decrypt(read);
+            string[] elements = decrypt.Split(':');
+            if(elements.Length<2)
+            {
+                Debug.LogError("Error! Load data invalid!");
+            }
+            switch(elements[0])
+            {
+                case "startingNode":
+                    carAI.startingNode = Int32.Parse(elements[1]);
+                    break;
+
+                case "targetNode":
+                    carAI.targetNode = Int32.Parse(elements[1]);
+                    break;
+
+                case "rotation":
+                    rotation = float.Parse(elements[1]);
+                    Debug.Log("rotation y:" + rotation.ToString());
+                    break;
+
+                default:
+                    break;
+            }
         }
-        return data;
+
+        carAI.InitState();
+        carAI.transform.rotation = Quaternion.Euler(0, rotation, 0);
+
+        reader.Close();
     }
 
-    private string Encrypt(string stringToEncrypt, string key)
+    private string Encrypt(string stringToEncrypt)
     {
         if (string.IsNullOrEmpty(stringToEncrypt))
         {
@@ -63,7 +116,7 @@ public class SaveLoadManager : MonoBehaviour
         return BitConverter.ToString(bytes);
     }
 
-    private string Decrypt(string stringToDecrypt, string key)
+    private string Decrypt(string stringToDecrypt)
     {
         if (string.IsNullOrEmpty(stringToDecrypt))
         {

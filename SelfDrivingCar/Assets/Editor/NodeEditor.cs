@@ -34,7 +34,7 @@ class NodeEditor : Editor
 
         Rect dadRect = new Rect();
         dadRect = GUILayoutUtility.GetRect(0, 80, GUILayout.ExpandWidth(true));
-        GUI.Box(dadRect, "Drag and Drop Prefabs to this Box!", GuistyleBoxDND);
+        GUI.Box(dadRect, "Drag and Drop Adjacent Nodes to this Box!", GuistyleBoxDND);
 
         if (dadRect.Contains(Event.current.mousePosition))
         {

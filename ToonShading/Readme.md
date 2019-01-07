@@ -1,3 +1,6 @@
 Toon Shading Sample
 
-A Sample of toon shading effect with comparison to standard shading.
+A Sample of toon shading effect with comparison to standard shading.    
+Preview:     
+![image](ToonShading.gif)
+
